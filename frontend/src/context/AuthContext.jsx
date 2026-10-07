@@ -36,15 +36,17 @@ export function AuthProvider({ children }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      setSession(newSession)
+    } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
+        setSession(newSession)
 
-      if (newSession) {
-        await loadBackendUser()
-      } else {
-        setUser(null)
+        if (newSession) {
+          await loadBackendUser()
+        } else {
+          setUser(null)
+        }
       }
-    })
+    )
 
     return () => {
       subscription.unsubscribe()
@@ -52,12 +54,16 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-      },
-    })
+    const { data, error } =
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      })
+
+    console.log('Google OAuth data:', data)
+    console.log('Google OAuth error:', error)
 
     if (error) {
       throw error
@@ -66,6 +72,7 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+
     setSession(null)
     setUser(null)
   }
